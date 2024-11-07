@@ -29,13 +29,23 @@ export const CardProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loadCards();
   }, []);
 
+  // const saveCardsToStorage = async (cards: Card[]) => {
+  //   try {
+  //     await AsyncStorage.setItem('savedCards', JSON.stringify(cards));
+  //   } catch (error) {
+  //     console.error('Error saving cards to AsyncStorage', error);
+  //   }
+  // };
+
   const saveCardsToStorage = async (cards: Card[]) => {
     try {
       await AsyncStorage.setItem('savedCards', JSON.stringify(cards));
+      console.log("Saved Cards to AsyncStorage:", cards); // Debugging
     } catch (error) {
       console.error('Error saving cards to AsyncStorage', error);
     }
   };
+  
 
   const addCard = (card: Card) => {
     const updatedCards = [...savedCards, card];
@@ -43,28 +53,35 @@ export const CardProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     saveCardsToStorage(updatedCards);
   };
 
-  const removeCard = (index: number) => {
-    const updatedCards = savedCards.filter((_, i) => i !== index);
-    setSavedCards(updatedCards);
-    saveCardsToStorage(updatedCards);
+  const removeCard = async (index: number) => {
+    console.log("delete1")
+    try {
+      // Filter out the card at the specified index
+      const updatedCards = savedCards.filter((_, i) => i !== index);
+      
+      // Update the state with the new cards array
+      setSavedCards(updatedCards);
+  
+      // Persist the updated cards to AsyncStorage
+      await AsyncStorage.setItem('savedCards', JSON.stringify(updatedCards));
+  
+      console.log("Card deleted:", updatedCards); // Debugging log
+    } catch (error) {
+      console.error("Error deleting card:", error); // Error handling
+    }
   };
+  
 
-  // const updateCard = (index: number, updatedCard: Card) => {
-  //   const updatedCards = savedCards.map((card, i) =>
-  //     i === index ? updatedCard : card
-  //   );
-  //   setSavedCards(updatedCards);
-  //   saveCardsToStorage(updatedCards);
-  // };
+  
 
   const updateCard = (index: number, updatedCard: { text: string; image: string | null }) => {
     setSavedCards((prevCards) => {
       const newCards = [...prevCards];
       newCards[index] = updatedCard; // Replace the updated card at the specific index
+      saveCardsToStorage(newCards); // Sync the updated state to AsyncStorage
       return newCards;
     });
   };
-  
 
   return (
     <CardContext.Provider value={{ savedCards, addCard, removeCard, updateCard }}>

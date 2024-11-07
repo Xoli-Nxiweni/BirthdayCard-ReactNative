@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, Alert, Modal, TextInput, Button } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, Modal, TextInput, Button } from 'react-native';
 import { useCardContext } from '../CardContext';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // Import icons
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const CRUD: React.FC = () => {
-  const { savedCards, removeCard, updateCard } = useCardContext(); // Assuming updateCard is part of context
+  const { savedCards, removeCard, updateCard } = useCardContext();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentCard, setCurrentCard] = useState<{ text: string; image: string | null } | null>(null);
   const [editedCardText, setEditedCardText] = useState<string>('');
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
+  // Render each card in the list
   const renderItem = ({ item, index }: { item: { text: string; image: string | null }; index: number }) => (
     <View style={styles.card}>
       <Text style={styles.cardText}>{item.text}</Text>
@@ -28,43 +29,49 @@ const CRUD: React.FC = () => {
     </View>
   );
 
+  // View card details
   const handleViewCard = (card: { text: string; image: string | null }) => {
     setCurrentCard(card);
+    setEditIndex(null); // Ensure view mode
     setIsModalVisible(true);
   };
 
+  // Edit card details
   const handleEditCard = (card: { text: string; image: string | null }, index: number) => {
     setEditedCardText(card.text);
+    setCurrentCard(card);
     setEditIndex(index);
     setIsModalVisible(true);
   };
 
+  // Save edited card
   const handleSaveEditedCard = () => {
-    if (editIndex !== null) {
-      const updatedCard = { text: editedCardText, image: currentCard?.image || null };
+    if (editIndex !== null && currentCard) {
+      const updatedCard = {
+        text: editedCardText,
+        image: currentCard.image || null,
+      };
       updateCard(editIndex, updatedCard);
     }
-    setIsModalVisible(false);
+    closeModal();
   };
 
+  // Delete card with confirmation alert
   const handleDeleteCard = (index: number) => {
-    Alert.alert(
-      'Delete Card',
-      'Are you sure you want to delete this card?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          onPress: () => removeCard(index),
-        },
-      ]
-    );
+    removeCard(index);
+  };
+
+  // Close modal and reset state
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setCurrentCard(null);
+    setEditIndex(null);
+    setEditedCardText('');
   };
 
   if (savedCards.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.header}>Your Saved Cards</Text>
         <Text style={styles.emptyStateText}>No saved cards yet. Create a card to get started!</Text>
       </View>
     );
@@ -80,13 +87,13 @@ const CRUD: React.FC = () => {
         extraData={savedCards}
         ListEmptyComponent={<Text style={styles.emptyStateText}>No cards available</Text>}
       />
-      <Modal visible={isModalVisible} onRequestClose={() => setIsModalVisible(false)} animationType="slide">
+      <Modal visible={isModalVisible} onRequestClose={closeModal} animationType="slide">
         <View style={styles.modalContainer}>
-          {currentCard && !editIndex ? (
+          {editIndex === null ? (
             <>
               <Text style={styles.modalHeader}>View Card</Text>
-              <Text style={styles.modalText}>{currentCard.text}</Text>
-              {currentCard.image && <Image source={{ uri: currentCard.image }} style={styles.cardImage} />}
+              <Text style={styles.modalText}>{currentCard?.text}</Text>
+              {currentCard?.image && <Image source={{ uri: currentCard.image }} style={styles.cardImage} />}
             </>
           ) : (
             <>
@@ -100,7 +107,7 @@ const CRUD: React.FC = () => {
               <Button title="Save" onPress={handleSaveEditedCard} />
             </>
           )}
-          <Button title="Close" onPress={() => setIsModalVisible(false)} />
+          <Button title="Close" onPress={closeModal} />
         </View>
       </Modal>
     </View>
@@ -143,10 +150,10 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    gap: '10px',
+    justifyContent: 'space-between',
   },
   iconButton: {
-    marginBottom: 10, // Add spacing between icons
+    padding: 5,
   },
   modalContainer: {
     padding: 20,
