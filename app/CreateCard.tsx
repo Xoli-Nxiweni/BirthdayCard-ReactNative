@@ -49,6 +49,7 @@ const CreateCard: React.FC = () => {
             onChangeText={setText}
             multiline
           />
+          <View style={styles.buttons}>
           <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
             <Text style={styles.imageButtonText}>Pick an Image</Text>
           </TouchableOpacity>
@@ -56,6 +57,7 @@ const CreateCard: React.FC = () => {
           <TouchableOpacity style={styles.saveButton} onPress={saveCard}>
             <Text style={styles.saveButtonText}>Save Card</Text>
           </TouchableOpacity>
+          </View>
           <TouchableOpacity style={styles.manageButton} onPress={() => navigation.navigate("CRUD")}>
             <Text style={styles.manageButtonText}>Manage Saved Cards</Text>
           </TouchableOpacity>
@@ -71,12 +73,8 @@ const CreateCard: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    // backgroundColor: '#fff',
-    // backgroundColor: "green",
+    padding: 5,
     flex: 1,
-    // justifyContent: 'center',
-    // alignItems: 'center',
   },
   header: {
     fontSize: 24,
@@ -86,7 +84,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     width: '100%',
-    height: 100,
+    height: 200,
     borderColor: '#ccc',
     boxShadow: '1px 2px 5px #ccc',
     outline: 'none',
@@ -97,8 +95,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     
   },
+  buttons: {
+    flexDirection: 'row',
+    alignContent: 'center',
+    justifyContent: 'center',
+    gap: 10
+  },
   imageButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 5,
     marginVertical: 10,
@@ -115,7 +119,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#0d0d0daa',
     padding: 15,
     borderRadius: 5,
     marginVertical: 10,
@@ -126,7 +130,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   manageButton: {
-    backgroundColor: '#FFA500',
+    backgroundColor: '#0d0d0daa',
     padding: 15,
     borderRadius: 5,
     marginTop: 20,

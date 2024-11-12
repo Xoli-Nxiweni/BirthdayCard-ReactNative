@@ -12,7 +12,7 @@ const LandingPage: React.FC = () => {
         source={{ uri: 'https://your-image-url.com/landing-image.png' }} 
         style={styles.image} 
       />
-      <Text style={styles.title}>Welcome to Birthday Card Maker!</Text>
+      <Text style={styles.title}>Welcome to the Birthday Card Maker!</Text>
       <Text style={styles.subtitle}>
         Create, personalize, and save beautiful birthday cards for your loved ones.
       </Text>

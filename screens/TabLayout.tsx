@@ -23,7 +23,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'whitesmoke',
   },
   header: {
     fontSize: 24,
