@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, TextInput, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from 'expo-router';
 import { useCardContext } from '../CardContext';
@@ -10,29 +10,52 @@ const CreateCard: React.FC = () => {
   const { addCard } = useCardContext();
   const [text, setText] = useState('');
   const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
+    setLoading(true);
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Denied', 'You need to grant permission to select images.');
+        setLoading(false);
+        return;
+      }
 
-    if (!result.canceled && result.assets && result.assets[0].uri) {
-      setImage(result.assets[0].uri);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0].uri) {
+        setImage(result.assets[0].uri);
+      } else {
+        Alert.alert('No Image Selected', 'Please select an image to continue.');
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Something went wrong while picking the image.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const saveCard = () => {
     if (!text.trim()) {
-      Alert.alert("Text Required", "Please add some text to your card.");
+      Alert.alert('Text Required', 'Please add some text to your card.');
+      return;
+    }
+
+    if (!image) {
+      Alert.alert('Image Required', 'Please select an image for your card.');
       return;
     }
 
     const newCard = { text, image };
     addCard(newCard);
 
-    Alert.alert("Card Saved", "Your card has been saved successfully.");
+    Alert.alert('Card Saved', 'Your card has been saved successfully.');
     setText('');
     setImage(null);
   };
@@ -50,15 +73,23 @@ const CreateCard: React.FC = () => {
             multiline
           />
           <View style={styles.buttons}>
-          <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
-            <Text style={styles.imageButtonText}>Pick an Image</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.imageButton} onPress={pickImage} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.imageButtonText}>Pick an Image</Text>
+              )}
+            </TouchableOpacity>
+          </View>
           {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
-          <TouchableOpacity style={styles.saveButton} onPress={saveCard}>
+          <TouchableOpacity
+            style={[styles.saveButton, !(text && image) && styles.saveButtonDisabled]}
+            onPress={saveCard}
+            disabled={!(text && image)}
+          >
             <Text style={styles.saveButtonText}>Save Card</Text>
           </TouchableOpacity>
-          </View>
-          <TouchableOpacity style={styles.manageButton} onPress={() => navigation.navigate("CRUD")}>
+          <TouchableOpacity style={styles.manageButton} onPress={() => navigation.navigate('CRUD')}>
             <Text style={styles.manageButtonText}>Manage Saved Cards</Text>
           </TouchableOpacity>
         </>
@@ -73,8 +104,9 @@ const CreateCard: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 5,
-    flex: 1,
+    padding: 20,
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   header: {
     fontSize: 24,
@@ -84,72 +116,69 @@ const styles = StyleSheet.create({
   },
   textInput: {
     width: '100%',
-    height: 200,
+    height: 150,
     borderColor: '#ccc',
-    boxShadow: '1px 2px 5px #ccc',
-    outline: 'none',
     borderWidth: 1,
     padding: 10,
     marginBottom: 10,
-    textAlignVertical: 'top',
     borderRadius: 5,
-    
+    textAlignVertical: 'top',
   },
   buttons: {
     flexDirection: 'row',
-    alignContent: 'center',
     justifyContent: 'center',
-    gap: 10
+    marginBottom: 20,
   },
   imageButton: {
     backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 5,
-    marginVertical: 10,
+    alignItems: 'center',
   },
   imageButtonText: {
     color: '#fff',
-    textAlign: 'center',
+    fontWeight: 'bold',
   },
   imagePreview: {
     width: '100%',
     height: 200,
-    marginTop: 10,
-    marginBottom: 20,
     borderRadius: 8,
+    marginBottom: 20,
   },
   saveButton: {
     backgroundColor: '#0d0d0daa',
     padding: 15,
     borderRadius: 5,
-    marginVertical: 10,
+    alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#aaa',
   },
   saveButtonText: {
     color: '#fff',
-    textAlign: 'center',
     fontWeight: 'bold',
   },
   manageButton: {
     backgroundColor: '#0d0d0daa',
     padding: 15,
     borderRadius: 5,
+    alignItems: 'center',
     marginTop: 20,
   },
   manageButtonText: {
     color: '#fff',
-    textAlign: 'center',
     fontWeight: 'bold',
   },
   startButton: {
     backgroundColor: '#8A2BE2',
     padding: 15,
     borderRadius: 5,
+    alignItems: 'center',
   },
   startButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
   },
 });
 
